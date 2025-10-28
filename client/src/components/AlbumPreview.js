@@ -33,17 +33,16 @@ export default function AlbumPreview({ images, albumTitle }) {
   }
 
     const goNext = () => {
-    if (flipBook.current?.getPageFlip) {
-        flipBook.current.getPageFlip().flipNext();
+    if (flipBook.current) {
+        flipBook.current.pageFlip().flipNext();
     }
     };
 
     const goPrev = () => {
-    if (flipBook.current?.getPageFlip) {
-        flipBook.current.getPageFlip().flipPrev();
+    if (flipBook.current) {
+        flipBook.current.pageFlip().flipPrev();
     }
     };
-
 
 
 
