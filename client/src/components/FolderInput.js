@@ -3,7 +3,7 @@ import { fetchImages } from "../api";
 
 export default function FolderInput({ onImagesFetched }) {
   const [link, setLink] = useState("");
-  const [albumTitle, setAlbumTitle] = useState(""); // ✅ new state for album title
+  const [albumTitle, setAlbumTitle] = useState(""); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,7 +19,8 @@ export default function FolderInput({ onImagesFetched }) {
     setLoading(true);
     try {
       const images = await fetchImages(link);
-      onImagesFetched(images, albumTitle); // ✅ pass albumTitle along
+      // pass albumTitle along with images
+      onImagesFetched(images, albumTitle); 
     } catch (err) {
       setError("Failed to load images. Check the link.");
     } finally {

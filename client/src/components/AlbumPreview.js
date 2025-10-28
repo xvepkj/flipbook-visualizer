@@ -1,11 +1,15 @@
 import React, { useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
+import { v4 as uuidv4 } from "uuid";
 
-export default function AlbumPreview({ images, albumTitle }) {
+export default function AlbumPreview({ images, albumTitle, hideShareButton = false }) {
   const flipBook = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
 
-  // ✅ Converts Google Drive URLs into direct image links
+  // Shareable link state
+  const [shareLink, setShareLink] = useState("");
+
+  // Converts Google Drive URLs into direct image links
   const convertDriveUrl = (url) => {
     if (!url) return "";
     if (!url.startsWith("http")) url = "https://" + url;
@@ -18,33 +22,50 @@ export default function AlbumPreview({ images, albumTitle }) {
     return `https://lh3.googleusercontent.com/d/${fileId}=s2000`;
   };
 
-  // 🖤 Add album title as first left page (cover)
+  // Normalize images
+  const normalizedImages = images.map((img, idx) => {
+    const url = typeof img === "string" ? img : img.url;
+    const name = img.name || `Image ${idx + 1}`;
+    return { id: idx, url: convertDriveUrl(url), name };
+  });
+
+  // Add album title as first page (cover)
   let pages = [
     { id: "cover", title: "" },
-    ...images.map((img) => ({
-      ...img,
-      url: convertDriveUrl(img.url),
-    })),
+    ...normalizedImages,
   ];
 
-  // 📖 Ensure even number of pages for two-page layout
+  // Ensure even number of pages for two-page layout
   if (pages.length % 2 !== 0) {
     pages.push({ id: "blank", url: "", name: "Blank Page" });
   }
 
-    const goNext = () => {
-    if (flipBook.current) {
-        flipBook.current.pageFlip().flipNext();
-    }
+  // Navigation functions
+  const goNext = () => {
+    if (flipBook.current) flipBook.current.pageFlip().flipNext();
+  };
+
+  const goPrev = () => {
+    if (flipBook.current) flipBook.current.pageFlip().flipPrev();
+  };
+
+  // Share button handler
+  const handleShare = () => {
+    const albumId = uuidv4();
+    const albumData = {
+      id: albumId,
+      title: albumTitle,
+      images: normalizedImages.map((img) => img.url),
     };
 
-    const goPrev = () => {
-    if (flipBook.current) {
-        flipBook.current.pageFlip().flipPrev();
-    }
-    };
+    localStorage.setItem(`album-${albumId}`, JSON.stringify(albumData));
 
+    const url = `${window.location.origin}/album/${albumId}`;
+    setShareLink(url);
 
+    navigator.clipboard.writeText(url);
+    alert("Shareable link copied to clipboard!");
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 20 }}>
@@ -66,35 +87,29 @@ export default function AlbumPreview({ images, albumTitle }) {
         mobileScrollSupport={true}
         style={{ boxShadow: "0 8px 25px rgba(0,0,0,0.25)", backgroundColor: "#ddd" }}
       >
-        {pages.map((page, i) => {
-          // Album title page
-          if (page.title) {
-            return (
-              <div
-                key={page.id}
-                style={{
-                  background: "linear-gradient(145deg, #2f3542, #57606f)",
-                  color: "white",
-                  fontSize: "28px",
-                  fontWeight: "bold",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "100%",
-                  height: "100%",
-                  textAlign: "center",
-                  padding: "20px",
-                  border: "2px solid #1e272e",
-                  fontFamily: "serif",
-                }}
-              >
-                {page.title}
-              </div>
-            );
-          }
-
-          // Normal image pages
-          return (
+        {pages.map((page, i) =>
+          page.title ? (
+            <div
+              key={page.id}
+              style={{
+                background: "linear-gradient(145deg, #2f3542, #57606f)",
+                color: "white",
+                fontSize: "28px",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                height: "100%",
+                textAlign: "center",
+                padding: "20px",
+                border: "2px solid #1e272e",
+                fontFamily: "serif",
+              }}
+            >
+              {page.title}
+            </div>
+          ) : (
             <div
               key={page.id || i}
               style={{
@@ -135,21 +150,25 @@ export default function AlbumPreview({ images, albumTitle }) {
                 </div>
               )}
             </div>
-          );
-        })}
+          )
+        )}
       </HTMLFlipBook>
 
-      {/* Navigation buttons */}
-    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 20 }}>
-    <button onClick={goPrev} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
-        Previous
-    </button>
-    <span>Page {currentPage + 1} / {pages.length}</span>
-    <button onClick={goNext} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
-        Next
-    </button>
-    </div>
-
+      {/* Navigation and Share buttons */}
+      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 20 }}>
+        <button onClick={goPrev} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+          Previous
+        </button>
+        <span>Page {currentPage + 1} / {pages.length}</span>
+        <button onClick={goNext} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+          Next
+        </button>
+        {!hideShareButton && (
+          <button onClick={handleShare} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+            Share Album
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,38 +1,38 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import FolderInput from "./components/FolderInput";
 import AlbumPreview from "./components/AlbumPreview";
+import SharedAlbum from "./components/SharedAlbum";
 
 function App() {
-  const [images, setImages] = useState([]);
-  const [albumTitle, setAlbumTitle] = useState(""); // ✅ Album title state
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#f9fafb",
-        padding: "20px",
-      }}
-    >
-      <h1 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px" }}>
-        Flipbook Visualizer
-      </h1>
+    <Router>
+      <Routes>
+        {/* Home page: Folder input */}
+        <Route path="/" element={<FolderInputWrapper />} />
 
-      {images.length === 0 ? (
-        <FolderInput
-          onImagesFetched={(imgs, title) => {
-            setImages(imgs);
-            setAlbumTitle(title); // ✅ Set the album title
-          }}
-        />
-      ) : (
-        <AlbumPreview images={images} albumTitle={albumTitle} /> // ✅ Pass title to AlbumPreview
-      )}
-    </div>
+        {/* Shared album view */}
+        <Route path="/album/:id" element={<SharedAlbum />} />
+      </Routes>
+    </Router>
+  );
+}
+
+// Optional wrapper to handle FolderInput state and show AlbumPreview
+function FolderInputWrapper() {
+  const [images, setImages] = React.useState([]);
+  const [albumTitle, setAlbumTitle] = React.useState("");
+
+  return images.length > 0 ? (
+    <AlbumPreview images={images} albumTitle={albumTitle} />
+  ) : (
+    <FolderInput
+      onImagesFetched={(imgs, title) => {
+        setImages(imgs);
+        setAlbumTitle(title);
+      }}
+    />
   );
 }
 
