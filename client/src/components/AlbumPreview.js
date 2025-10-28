@@ -19,7 +19,7 @@ export default function AlbumPreview({ images, albumTitle }) {
 
   // 🖤 Add album title as first left page (cover)
   let pages = [
-    { id: "cover", title: albumTitle },
+    { id: "cover", title: "" },
     ...images.map((img) => ({
       ...img,
       url: convertDriveUrl(img.url),
@@ -123,7 +123,7 @@ export default function AlbumPreview({ images, albumTitle }) {
                     fontSize: 20,
                   }}
                 >
-                  {page.name || "Blank Page"}
+                  {albumTitle || "Blank Page"}
                 </div>
               )}
             </div>

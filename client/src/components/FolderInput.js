@@ -3,16 +3,23 @@ import { fetchImages } from "../api";
 
 export default function FolderInput({ onImagesFetched }) {
   const [link, setLink] = useState("");
+  const [albumTitle, setAlbumTitle] = useState(""); // ✅ new state for album title
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!albumTitle.trim()) {
+      setError("Please enter an album title");
+      return;
+    }
+
     setLoading(true);
     try {
       const images = await fetchImages(link);
-      onImagesFetched(images);
+      onImagesFetched(images, albumTitle); // ✅ pass albumTitle along
     } catch (err) {
       setError("Failed to load images. Check the link.");
     } finally {
@@ -27,11 +34,20 @@ export default function FolderInput({ onImagesFetched }) {
     >
       <input
         type="text"
+        placeholder="Enter album title"
+        value={albumTitle}
+        onChange={(e) => setAlbumTitle(e.target.value)}
+        style={{ border: "1px solid #ccc", borderRadius: "6px", padding: "8px", width: "300px" }}
+      />
+
+      <input
+        type="text"
         placeholder="Paste your Google Drive folder link"
         value={link}
         onChange={(e) => setLink(e.target.value)}
         style={{ border: "1px solid #ccc", borderRadius: "6px", padding: "8px", width: "300px" }}
       />
+
       <button
         disabled={loading}
         style={{
@@ -45,6 +61,7 @@ export default function FolderInput({ onImagesFetched }) {
       >
         {loading ? "Loading..." : "Create Flipbook"}
       </button>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
     </form>
   );

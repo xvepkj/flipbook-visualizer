@@ -4,6 +4,7 @@ import AlbumPreview from "./components/AlbumPreview";
 
 function App() {
   const [images, setImages] = useState([]);
+  const [albumTitle, setAlbumTitle] = useState(""); // ✅ Album title state
 
   return (
     <div
@@ -20,10 +21,16 @@ function App() {
       <h1 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "20px" }}>
         Flipbook Visualizer
       </h1>
+
       {images.length === 0 ? (
-        <FolderInput onImagesFetched={setImages} />
+        <FolderInput
+          onImagesFetched={(imgs, title) => {
+            setImages(imgs);
+            setAlbumTitle(title); // ✅ Set the album title
+          }}
+        />
       ) : (
-        <AlbumPreview images={images} />
+        <AlbumPreview images={images} albumTitle={albumTitle} /> // ✅ Pass title to AlbumPreview
       )}
     </div>
   );
