@@ -1,8 +1,9 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 
 export default function AlbumPreview({ images, albumTitle }) {
   const flipBook = useRef(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   // ✅ Converts Google Drive URLs into direct image links
   const convertDriveUrl = (url) => {
@@ -31,35 +32,43 @@ export default function AlbumPreview({ images, albumTitle }) {
     pages.push({ id: "blank", url: "", name: "Blank Page" });
   }
 
+    const goNext = () => {
+    if (flipBook.current?.getPageFlip) {
+        flipBook.current.getPageFlip().flipNext();
+    }
+    };
+
+    const goPrev = () => {
+    if (flipBook.current?.getPageFlip) {
+        flipBook.current.getPageFlip().flipPrev();
+    }
+    };
+
+
+
+
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        marginTop: 20,
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 20 }}>
       <HTMLFlipBook
+        ref={flipBook}
         width={350}
         height={450}
-        showCover={false} // ❌ We manually handle the cover
+        showCover={false}
         size="fixed"
         minWidth={350}
         maxWidth={900}
         minHeight={450}
         maxHeight={1200}
         drawShadow={true}
-        flippingTime={1000}
-        usePortrait={false} // ✅ Two-page landscape view
+        flippingTime={700}
+        usePortrait={false}
         startPage={0}
+        onFlip={(e) => setCurrentPage(e.data)}
         mobileScrollSupport={true}
-        style={{
-          boxShadow: "0 8px 25px rgba(0,0,0,0.25)",
-          backgroundColor: "#ddd",
-        }}
+        style={{ boxShadow: "0 8px 25px rgba(0,0,0,0.25)", backgroundColor: "#ddd" }}
       >
         {pages.map((page, i) => {
-          // 🖤 Render album title centered on the first page
+          // Album title page
           if (page.title) {
             return (
               <div
@@ -85,7 +94,7 @@ export default function AlbumPreview({ images, albumTitle }) {
             );
           }
 
-          // 🔹 Render normal image pages
+          // Normal image pages
           return (
             <div
               key={page.id || i}
@@ -130,6 +139,18 @@ export default function AlbumPreview({ images, albumTitle }) {
           );
         })}
       </HTMLFlipBook>
+
+      {/* Navigation buttons */}
+    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 20 }}>
+    <button onClick={goPrev} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+        Previous
+    </button>
+    <span>Page {currentPage + 1} / {pages.length}</span>
+    <button onClick={goNext} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+        Next
+    </button>
+    </div>
+
     </div>
   );
 }
