@@ -13,7 +13,7 @@ function App() {
         <Route path="/" element={<FolderInputWrapper />} />
 
         {/* Shared album view */}
-        <Route path="/album/:id" element={<SharedAlbum />} />
+        <Route path="/album/:data" element={<SharedAlbum />} />
       </Routes>
     </Router>
   );

@@ -31,19 +31,22 @@ export default function AlbumPreview({ images, albumTitle, hideShareButton = fal
   const goNext = () => flipBook.current?.pageFlip().flipNext();
   const goPrev = () => flipBook.current?.pageFlip().flipPrev();
 
-  const handleShare = () => {
-    const albumId = uuidv4();
+  // AlbumPreview.js (share handler)
+    const handleShare = () => {
     const albumData = {
-      id: albumId,
-      title: albumTitle,
-      images: normalizedImages.map((img) => img.url),
+        title: albumTitle,
+        images: normalizedImages.map((img) => img.url),
     };
-    localStorage.setItem(`album-${albumId}`, JSON.stringify(albumData));
-    const url = `${window.location.origin}/album/${albumId}`;
+
+    // Convert to Base64
+    const encoded = btoa(JSON.stringify(albumData));
+    const url = `${window.location.origin}/album/${encoded}`;
+
     setShareLink(url);
     navigator.clipboard.writeText(url);
     alert("Shareable link copied to clipboard!");
-  };
+    };
+
 
   return (
     <div

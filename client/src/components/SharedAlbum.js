@@ -13,8 +13,9 @@ const reverseDriveUrl = (directUrl) => {
 
 export default function SharedAlbum() {
   const { id } = useParams();
+    const { data } = useParams(); // now the param is base64 data
 
-  const albumData = JSON.parse(localStorage.getItem(`album-${id}`));
+  const albumData = JSON.parse(atob(data));
 
   if (!albumData) return <div>Album not found</div>;
 
