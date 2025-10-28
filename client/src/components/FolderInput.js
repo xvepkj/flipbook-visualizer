@@ -33,10 +33,15 @@ export default function FolderInput({ onImagesFetched }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        flexDirection: "column",
         height: "100vh", // full viewport height
         width: "100%",
       }}
     >
+      <h1 style={{ marginBottom: "20px", fontFamily: "sans-serif", color: "#333" }}>
+        Antesca Flipbook Viewer
+      </h1>
+
       <form
         onSubmit={handleSubmit}
         style={{
