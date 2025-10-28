@@ -5,11 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 export default function AlbumPreview({ images, albumTitle, hideShareButton = false }) {
   const flipBook = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
-
-  // Shareable link state
   const [shareLink, setShareLink] = useState("");
 
-  // Converts Google Drive URLs into direct image links
   const convertDriveUrl = (url) => {
     if (!url) return "";
     if (!url.startsWith("http")) url = "https://" + url;
@@ -22,34 +19,18 @@ export default function AlbumPreview({ images, albumTitle, hideShareButton = fal
     return `https://lh3.googleusercontent.com/d/${fileId}=s2000`;
   };
 
-  // Normalize images
   const normalizedImages = images.map((img, idx) => {
     const url = typeof img === "string" ? img : img.url;
     const name = img.name || `Image ${idx + 1}`;
     return { id: idx, url: convertDriveUrl(url), name };
   });
 
-  // Add album title as first page (cover)
-  let pages = [
-    { id: "cover", title: "" },
-    ...normalizedImages,
-  ];
+  let pages = [{ id: "cover", title: "" }, ...normalizedImages];
+  if (pages.length % 2 !== 0) pages.push({ id: "blank", url: "", name: "Blank Page" });
 
-  // Ensure even number of pages for two-page layout
-  if (pages.length % 2 !== 0) {
-    pages.push({ id: "blank", url: "", name: "Blank Page" });
-  }
+  const goNext = () => flipBook.current?.pageFlip().flipNext();
+  const goPrev = () => flipBook.current?.pageFlip().flipPrev();
 
-  // Navigation functions
-  const goNext = () => {
-    if (flipBook.current) flipBook.current.pageFlip().flipNext();
-  };
-
-  const goPrev = () => {
-    if (flipBook.current) flipBook.current.pageFlip().flipPrev();
-  };
-
-  // Share button handler
   const handleShare = () => {
     const albumId = uuidv4();
     const albumData = {
@@ -57,18 +38,24 @@ export default function AlbumPreview({ images, albumTitle, hideShareButton = fal
       title: albumTitle,
       images: normalizedImages.map((img) => img.url),
     };
-
     localStorage.setItem(`album-${albumId}`, JSON.stringify(albumData));
-
     const url = `${window.location.origin}/album/${albumId}`;
     setShareLink(url);
-
     navigator.clipboard.writeText(url);
     alert("Shareable link copied to clipboard!");
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 20 }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        flexDirection: "column",
+        gap: 20,
+      }}
+    >
       <HTMLFlipBook
         ref={flipBook}
         width={350}
@@ -154,8 +141,7 @@ export default function AlbumPreview({ images, albumTitle, hideShareButton = fal
         )}
       </HTMLFlipBook>
 
-      {/* Navigation and Share buttons */}
-      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <button onClick={goPrev} style={{ padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
           Previous
         </button>
