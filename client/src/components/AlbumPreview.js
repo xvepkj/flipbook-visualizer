@@ -2,6 +2,23 @@ import React, { useRef, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { v4 as uuidv4 } from "uuid";
 
+async function shortenUrl(longUrl) {
+  const apiKey = process.env.REACT_APP_TINYURL_API_KEY;
+  const res = await fetch(`https://api.tinyurl.com/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      url: longUrl,
+      domain: "tiny.one"
+    })
+  });
+  const data = await res.json();
+  return data.data.tiny_url;
+}
+
 export default function AlbumPreview({ images, albumTitle, hideShareButton = false }) {
   const flipBook = useRef(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -31,21 +48,21 @@ export default function AlbumPreview({ images, albumTitle, hideShareButton = fal
   const goNext = () => flipBook.current?.pageFlip().flipNext();
   const goPrev = () => flipBook.current?.pageFlip().flipPrev();
 
-  // AlbumPreview.js (share handler)
-    const handleShare = () => {
+  const handleShare = async () => {
     const albumData = {
-        title: albumTitle,
-        images: normalizedImages.map((img) => img.url),
+      title: albumTitle,
+      images: normalizedImages.map((img) => img.url),
     };
 
     // Convert to Base64
     const encoded = btoa(JSON.stringify(albumData));
     const url = `${window.location.origin}/album/${encoded}`;
+    const shortUrl = await shortenUrl(url);
+    setShareLink(shortUrl);
+    navigator.clipboard.writeText(shortUrl);
+    alert("Sharing link copied!");
+  };
 
-    setShareLink(url);
-    navigator.clipboard.writeText(url);
-    alert("Shareable link copied to clipboard!");
-    };
 
 
   return (
