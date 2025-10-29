@@ -48,20 +48,50 @@ export default function AlbumPreview({ images, albumTitle, hideShareButton = fal
   const goNext = () => flipBook.current?.pageFlip().flipNext();
   const goPrev = () => flipBook.current?.pageFlip().flipPrev();
 
-  const handleShare = async () => {
-    const albumData = {
-      title: albumTitle,
-      images: normalizedImages.map((img) => img.url),
-    };
-
-    // Convert to Base64
-    const encoded = btoa(JSON.stringify(albumData));
-    const url = `${window.location.origin}/album/${encoded}`;
-    const shortUrl = await shortenUrl(url);
-    setShareLink(shortUrl);
-    navigator.clipboard.writeText(shortUrl);
-    alert("Sharing link copied!");
+const handleShare = async () => {
+  const albumData = {
+    title: albumTitle,
+    images: normalizedImages.map((img) => img.url),
   };
+
+  // Convert album data to Base64
+  const encoded = btoa(JSON.stringify(albumData));
+  const url = `${window.location.origin}/album/${encoded}`;
+
+  try {
+    // Optional: shorten link
+    const shortUrl = await shortenUrl(url);
+    const shareUrl = shortUrl || url;
+
+    // ✅ Use native mobile share if available
+    if (navigator.share) {
+      await navigator.share({
+        title: albumTitle || "Flipbook Album",
+        text: "Check out my album!",
+        url: shareUrl,
+      });
+    } else if (navigator.clipboard && window.isSecureContext) {
+      // ✅ Works in HTTPS environments and desktop browsers
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Sharing link copied to clipboard!");
+    } else {
+      // ✅ Fallback for older or insecure contexts
+      const tempInput = document.createElement("input");
+      tempInput.value = shareUrl;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempInput);
+      alert("Sharing link copied to clipboard!");
+    }
+
+    setShareLink(shareUrl);
+  } catch (err) {
+    console.error("Error sharing:", err);
+    alert("Could not share album. Please copy manually.");
+  }
+};
+
 
 
 
